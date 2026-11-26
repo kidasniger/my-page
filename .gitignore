@@ -17,3 +17,6 @@ build/
 
 # généré au build (Firebase)
 lib/firebase_options.dart
+
+# tests des règles
+node_modules/
