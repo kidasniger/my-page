@@ -40,8 +40,8 @@ void main() {
         _rnd(),
       ));
     final pair = gen.generateKeyPair();
-    pub = pair.publicKey as RSAPublicKey;
-    priv = pair.privateKey as RSAPrivateKey;
+    pub = pair.publicKey;
+    priv = pair.privateKey;
   });
 
   test('chiffre puis déchiffre avec la clé de test', () {
