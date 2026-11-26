@@ -65,7 +65,6 @@ class KidasApp extends StatelessWidget {
     final c = Palette.of(b);
     return ThemeData(
       useMaterial3: true,
-      fontFamily: 'Inter',
       brightness: b,
       scaffoldBackgroundColor: c.bg,
       colorScheme: ColorScheme.fromSeed(

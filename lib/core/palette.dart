@@ -88,9 +88,9 @@ extension PaletteCtx on BuildContext {
   Palette get p => Palette.of(Theme.of(this).brightness);
 }
 
-/// Polices de la maquette : Archivo (titres, chiffres) + Inter (texte).
-const kDisp = 'Archivo';
-const kBody = 'Inter';
+/// Police du système : null = police du téléphone (aucune police embarquée).
+const String? kDisp = null;
+const String? kBody = null;
 
 class T {
   static TextStyle micro(Palette c) => TextStyle(
