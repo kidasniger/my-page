@@ -19,7 +19,9 @@ service cloud.firestore {
       return d.get('nom', '') is string
         && d.get('nom', '').size() <= 200
         && d.get('tokenEnc', '') is string
-        && d.get('tokenEnc', '').size() <= 8192;
+        && d.get('tokenEnc', '').size() <= 8192
+        && d.get('demande', 'connecter') in ['connecter', 'deconnecter']
+        && (d.get('demande', '') != 'deconnecter' || !('tokenEnc' in d));
     }
 
     match /users/{uid} {
@@ -29,10 +31,13 @@ service cloud.firestore {
       match /pages/{pageId} {
         allow read, delete: if isOwner(uid);
         allow create: if isOwner(uid)
-          && request.resource.data.keys().hasOnly(['nom', 'tokenEnc', 'demande'])
+          && request.resource.data.keys().hasOnly(['nom', 'tokenEnc', 'demande', 'maj'])
+          && request.resource.data.get('maj', request.time) == request.time
           && pageSizesOk();
         allow update: if isOwner(uid)
-          && onlyChanges(['nom', 'tokenEnc', 'demande'])
+          && onlyChanges(['nom', 'tokenEnc', 'demande', 'maj'])
+          && (!request.resource.data.diff(resource.data).affectedKeys().hasAny(['maj'])
+            || request.resource.data.maj == request.time)
           && pageSizesOk();
       }
 

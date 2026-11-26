@@ -5,7 +5,15 @@ import {
   assertSucceeds,
   assertFails,
 } from '@firebase/rules-unit-testing';
-import { doc, getDoc, setDoc, updateDoc, deleteDoc } from 'firebase/firestore';
+import {
+  doc,
+  getDoc,
+  setDoc,
+  updateDoc,
+  deleteDoc,
+  deleteField,
+  serverTimestamp,
+} from 'firebase/firestore';
 
 let env;
 
@@ -56,7 +64,7 @@ test('compte : lecture et suppression seulement', async () => {
 test('pages : champs autorisés seulement', async () => {
   await seed();
   await assertSucceeds(
-    setDoc(doc(alice(), 'users/alice/pages/p2'), { nom: 'B', tokenEnc: 'abc', demande: true }),
+    setDoc(doc(alice(), 'users/alice/pages/p2'), { nom: 'B', tokenEnc: 'abc', demande: 'connecter' }),
   );
   await assertFails(
     setDoc(doc(alice(), 'users/alice/pages/p3'), { nom: 'B', tokenEnc: 'abc', status: 'ok' }),
@@ -66,6 +74,40 @@ test('pages : champs autorisés seulement', async () => {
   await assertFails(updateDoc(doc(alice(), 'users/alice/pages/p1'), { quota: 999 }));
   await assertFails(
     setDoc(doc(alice(), 'users/alice/pages/p4'), { nom: 'x'.repeat(201), tokenEnc: 'a' }),
+  );
+});
+
+test('pages : connexion et déconnexion', async () => {
+  await seed();
+  const p1 = () => doc(alice(), 'users/alice/pages/p1');
+  const vieux = new Date(2000, 0, 1);
+  await assertSucceeds(
+    setDoc(
+      p1(),
+      { nom: 'A', tokenEnc: 'abc', demande: 'connecter', maj: serverTimestamp() },
+      { merge: true },
+    ),
+  );
+  await assertFails(updateDoc(p1(), { demande: 'deconnecter', maj: serverTimestamp() }));
+  await assertSucceeds(
+    updateDoc(p1(), {
+      tokenEnc: deleteField(),
+      demande: 'deconnecter',
+      maj: serverTimestamp(),
+    }),
+  );
+  await assertFails(updateDoc(p1(), { demande: 'autre' }));
+  await assertFails(updateDoc(p1(), { maj: vieux }));
+  await assertFails(
+    setDoc(doc(alice(), 'users/alice/pages/p5'), { nom: 'C', tokenEnc: 'a', maj: vieux }),
+  );
+  await assertSucceeds(
+    setDoc(doc(alice(), 'users/alice/pages/p6'), {
+      nom: 'C',
+      tokenEnc: 'a',
+      demande: 'connecter',
+      maj: serverTimestamp(),
+    }),
   );
 });
 
