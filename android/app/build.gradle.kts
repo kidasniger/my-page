@@ -6,6 +6,9 @@ plugins {
 }
 
 val runNumber = (System.getenv("GITHUB_RUN_NUMBER") ?: "1").toInt()
+// Facebook : valeurs injectées par les secrets GitHub, jamais dans le dépôt
+val fbAppId = System.getenv("FB_APP_ID")?.takeIf { it.isNotBlank() } ?: "0"
+val fbClientToken = System.getenv("FB_CLIENT_TOKEN")?.takeIf { it.isNotBlank() } ?: "0"
 
 android {
     namespace = "com.kidas.mypage"
@@ -29,6 +32,14 @@ android {
         // numéro de run GitHub Actions, comme la v1 Java
         versionCode = runNumber
         versionName = "1.0." + runNumber
+        resValue("string", "facebook_app_id", fbAppId)
+        resValue("string", "facebook_client_token", fbClientToken)
+        resValue("string", "fb_login_protocol_scheme", "fb" + fbAppId)
+    }
+
+    buildFeatures {
+        // AGP 9 : nécessaire pour les resValue Facebook ci-dessus
+        resValues = true
     }
 
     lint {
