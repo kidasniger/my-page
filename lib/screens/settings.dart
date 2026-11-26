@@ -18,6 +18,7 @@ import '../ui/pictos.dart';
 import '../ui/shell.dart' show SubPage, kUpdateFlow;
 import 'bot_rules.dart';
 import 'journal.dart';
+import 'delete_account.dart';
 import 'appearance.dart';
 import 'moderation.dart';
 
@@ -289,6 +290,16 @@ class SettingsScreenState extends State<SettingsScreen> {
               Fx.tick();
               await _push(const _AProposPage());
               _loadVersion();
+            },
+          ),
+          _ligne(
+            c,
+            'trash',
+            'Supprimer mon compte',
+            'Efface vos données et votre compte',
+            onTap: () async {
+              Fx.tick();
+              await _push(const DeleteAccountPage());
             },
           ),
         ]),
