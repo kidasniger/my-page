@@ -38,6 +38,7 @@ class SettingsScreenState extends State<SettingsScreen> {
   List<Regle> _regles = const [];
   String _savedAt = '';
   String _version = '';
+  bool _lockOn = false, _lockLoaded = false;
 
   @override
   void initState() {
@@ -45,6 +46,20 @@ class SettingsScreenState extends State<SettingsScreen> {
     _loadPage();
     _loadRegles();
     _loadVersion();
+    _loadLock();
+  }
+
+  Future<void> _loadLock() async {
+    try {
+      final v = await Store.get('lock_on');
+      if (!mounted) return;
+      setState(() {
+        _lockOn = v == '1';
+        _lockLoaded = true;
+      });
+    } catch (_) {
+      if (mounted) setState(() => _lockLoaded = true);
+    }
   }
 
   Future<void> _loadPage() async {
@@ -233,11 +248,30 @@ class SettingsScreenState extends State<SettingsScreen> {
         ]),
         /* groupe Sécurité */
         _groupe(c, [
-          _ligne(
-            c,
-            'shield',
-            'Verrouillage',
-            "Protégé par le verrou d'écran du téléphone",
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 13, vertical: 11),
+            child: Row(
+              children: [
+                _pastille(c, 'shield'),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: KSwitchRow(
+                    'Verrouillage au lancement',
+                    key: ValueKey(_lockLoaded),
+                    desc: "Demande le code, l'empreinte ou le visage du téléphone",
+                    value: _lockOn,
+                    job: (v) async {
+                      if (v) {
+                        await Store.set('lock_on', '1');
+                      } else {
+                        await Store.del('lock_on');
+                      }
+                      if (mounted) setState(() => _lockOn = v);
+                    },
+                  ),
+                ),
+              ],
+            ),
           ),
           _ligne(
             c,
