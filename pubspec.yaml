@@ -25,6 +25,12 @@ dependencies:
   # notifications locales (commentaires urgents, jeton)
   flutter_local_notifications: ^23.0.3
 
+  # Firebase : identité (Auth) et données (Firestore)
+  firebase_core: ^5.1.0
+  firebase_auth: ^7.0.1
+  cloud_firestore: ^7.1.0
+  google_sign_in: ^7.2.0
+
 dev_dependencies:
   flutter_test:
     sdk: flutter

@@ -36,6 +36,14 @@ jobs:
           mkdir -p assets/fonts
           curl -fsSL -o assets/fonts/Archivo.ttf "https://github.com/google/fonts/raw/main/ofl/archivo/Archivo%5Bwdth%2Cwght%5D.ttf"
           curl -fsSL -o assets/fonts/Inter.ttf "https://github.com/google/fonts/raw/main/ofl/inter/Inter%5Bopsz%2Cwght%5D.ttf"
+      - name: Configuration Firebase
+        env:
+          GOOGLE_SERVICES_B64: ${{ secrets.GOOGLE_SERVICES_B64 }}
+        run: |
+          test -n "$GOOGLE_SERVICES_B64" || { echo "Secret GOOGLE_SERVICES_B64 manquant."; exit 1; }
+          echo "$GOOGLE_SERVICES_B64" | base64 -d > "$RUNNER_TEMP/google-services.json"
+          python3 tools/gen_firebase_options.py "$RUNNER_TEMP/google-services.json" lib/firebase_options.dart
+
       - name: Dépendances
         run: flutter pub get
       - name: Analyse statique
