@@ -36,10 +36,11 @@ class Bus {
 
 Future<void> kUpdateFlow(BuildContext context, UpdInfo info) async {
   Bus.external = true;
+  // 0 proposition, 1 téléchargement, 2 prêt à installer, 3 installation, 4 erreur
+  var step = 0;
   var progress = 0.0;
-  var phase = 'Téléchargement...';
   var failed = '';
-  var started = false;
+  Future<void> Function()? installFn;
   await showDialog<void>(
     context: context,
     barrierDismissible: false,
@@ -47,27 +48,63 @@ Future<void> kUpdateFlow(BuildContext context, UpdInfo info) async {
       final c = ctx.p;
       return StatefulBuilder(
         builder: (ctx2, setD) {
-          Future<void> start() async {
+          void safe(VoidCallback f) {
+            if (ctx2.mounted) setD(f);
+          }
+
+          Future<void> install() async {
+            safe(() {
+              step = 3;
+              failed = '';
+            });
             try {
-              final f = await Updater.download(info, (done, total) {
-                if (total > 0) setD(() => progress = done / total);
-              });
-              setD(() => phase = 'Installation...');
               Bus.external = true;
-              await Updater.install(f);
+              await installFn!();
               if (ctx2.mounted) Navigator.pop(ctx2);
             } catch (e) {
-              setD(() {
+              safe(() {
                 failed = e.toString();
-                phase = '';
+                step = 4;
               });
             }
           }
 
-          // lancement unique au premier build du dialogue
-          if (!started) {
-            started = true;
-            Future.microtask(start);
+          Future<void> download() async {
+            safe(() {
+              step = 1;
+              progress = 0;
+              failed = '';
+            });
+            try {
+              final f = await Updater.download(info, (done, total) {
+                if (total > 0) safe(() => progress = done / total);
+              });
+              installFn = () async {
+                await Updater.install(f);
+              };
+              safe(() => step = 2);
+            } catch (e) {
+              safe(() {
+                failed = e.toString();
+                step = 4;
+              });
+            }
+          }
+
+          final String texte;
+          switch (step) {
+            case 1:
+              texte = 'Téléchargement...';
+              break;
+            case 2:
+              texte = 'Téléchargement terminé. Appuyez sur Installer pour '
+                  'mettre à jour.';
+              break;
+            case 3:
+              texte = 'Installation...';
+              break;
+            default:
+              texte = 'Une nouvelle version de My Page est disponible.';
           }
           return AlertDialog(
             backgroundColor: c.card,
@@ -89,41 +126,61 @@ Future<void> kUpdateFlow(BuildContext context, UpdInfo info) async {
                   Text(info.notes, style: T.body(c)),
                   const SizedBox(height: 12),
                 ],
-                if (failed.isEmpty && phase.isNotEmpty) ...[
-                  Text(phase, style: T.caption(c)),
+                if (step != 4) Text(texte, style: T.caption(c)),
+                if (step == 1 || step == 3) ...[
                   const SizedBox(height: 8),
                   ClipRRect(
                     borderRadius: BorderRadius.circular(99),
                     child: LinearProgressIndicator(
-                      value: phase == 'Installation...' ? null : progress,
+                      value: step == 3 ? null : progress,
                       minHeight: 6,
                       backgroundColor: c.soft,
                       valueColor: AlwaysStoppedAnimation(c.accent),
                     ),
                   ),
                 ],
-                if (failed.isNotEmpty) Text(failed, style: T.body(c)),
+                if (step == 4) Text(failed, style: T.body(c)),
               ],
             ),
             actions: [
-              if (failed.isEmpty && !info.mandatory)
+              if ((step == 0 || step == 2) && !info.mandatory)
+                TextButton(
+                  onPressed: () => Navigator.pop(ctx2),
+                  child: Text('Plus tard', style: TextStyle(color: c.muted)),
+                ),
+              if (step == 1)
                 TextButton(
                   onPressed: () {
                     Updater.cancelDownload();
                     Navigator.pop(ctx2);
                   },
-                  child: Text('Plus tard', style: TextStyle(color: c.muted)),
+                  child: Text('Annuler', style: TextStyle(color: c.muted)),
                 ),
-              if (failed.isNotEmpty)
+              if (step == 0)
                 TextButton(
-                  onPressed: () {
-                    setD(() {
-                      failed = '';
-                      phase = 'Téléchargement...';
-                      progress = 0;
-                    });
-                    Future.microtask(start);
-                  },
+                  onPressed: download,
+                  child: Text(
+                    'Télécharger',
+                    style: TextStyle(
+                      color: c.accent,
+                      fontWeight: FontWeight.w800,
+                    ),
+                  ),
+                ),
+              if (step == 2)
+                TextButton(
+                  onPressed: install,
+                  child: Text(
+                    'Installer',
+                    style: TextStyle(
+                      color: c.accent,
+                      fontWeight: FontWeight.w800,
+                    ),
+                  ),
+                ),
+              if (step == 4)
+                TextButton(
+                  onPressed: installFn != null ? install : download,
                   child: Text(
                     'Réessayer',
                     style: TextStyle(
@@ -132,7 +189,7 @@ Future<void> kUpdateFlow(BuildContext context, UpdInfo info) async {
                     ),
                   ),
                 ),
-              if (failed.isNotEmpty)
+              if (step == 4)
                 TextButton(
                   onPressed: () => Navigator.pop(ctx2),
                   child: Text('Fermer', style: TextStyle(color: c.muted)),

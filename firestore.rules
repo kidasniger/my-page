@@ -1,0 +1,83 @@
+rules_version = '2';
+
+// My Page : chaque utilisateur n'accède qu'à ses propres données.
+// Le bot (compte de service) ignore ces règles et écrit le reste.
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function isOwner(uid) {
+      return request.auth != null && request.auth.uid == uid;
+    }
+
+    // Seuls ces champs ont changé entre l'ancien et le nouveau document.
+    function onlyChanges(keys) {
+      return request.resource.data.diff(resource.data).affectedKeys().hasOnly(keys);
+    }
+
+    function pageSizesOk() {
+      let d = request.resource.data;
+      return d.get('nom', '') is string
+        && d.get('nom', '').size() <= 200
+        && d.get('tokenEnc', '') is string
+        && d.get('tokenEnc', '').size() <= 8192;
+    }
+
+    match /users/{uid} {
+      allow read, delete: if isOwner(uid);
+
+      // Pages connectées : le client ne touche ni status ni quotas.
+      match /pages/{pageId} {
+        allow read, delete: if isOwner(uid);
+        allow create: if isOwner(uid)
+          && request.resource.data.keys().hasOnly(['nom', 'tokenEnc', 'demande'])
+          && pageSizesOk();
+        allow update: if isOwner(uid)
+          && onlyChanges(['nom', 'tokenEnc', 'demande'])
+          && pageSizesOk();
+      }
+
+      // Boîte : écrite par le bot, le client marque seulement « traite ».
+      match /inbox/{id} {
+        allow read, delete: if isOwner(uid);
+        allow update: if isOwner(uid)
+          && onlyChanges(['traite'])
+          && request.resource.data.traite is bool;
+      }
+
+      // Statistiques : écrites par le bot.
+      match /stats/{id} {
+        allow read, delete: if isOwner(uid);
+      }
+
+      // Quota IA : lecture seule, jamais supprimable par le client.
+      match /quota/{id} {
+        allow read: if isOwner(uid);
+      }
+
+      // Profil de la Page : le client écrit ses réponses.
+      match /profil/{id} {
+        allow read, write: if isOwner(uid);
+      }
+
+      // Questions : créées par le bot, le client écrit réponse et état.
+      match /questions/{id} {
+        allow read, delete: if isOwner(uid);
+        allow update: if isOwner(uid)
+          && onlyChanges(['reponse', 'etat'])
+          && request.resource.data.get('reponse', '') is string
+          && request.resource.data.get('reponse', '').size() <= 2000
+          && request.resource.data.get('etat', '') is string;
+      }
+
+      // File d'actions pour le bot : création et suppression seulement.
+      match /file/{id} {
+        allow read, create, delete: if isOwner(uid);
+      }
+    }
+
+    // Tout le reste est refusé.
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}
