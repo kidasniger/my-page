@@ -1,0 +1,71 @@
+plugins {
+    id("com.android.application")
+    id("org.jetbrains.kotlin.android")
+    // The Flutter Gradle Plugin must be applied after the Android and Kotlin Gradle plugins.
+    id("dev.flutter.flutter-gradle-plugin")
+}
+
+val runNumber = (System.getenv("GITHUB_RUN_NUMBER") ?: "1").toInt()
+
+android {
+    namespace = "com.kidas.mypage"
+    /* flutter_local_notifications 23 et androidx.core 1.19 exigent le SDK 37
+       (flutter.compileSdkVersion reste à 36 avec Flutter 3.50). */
+    compileSdk = 37
+    ndkVersion = flutter.ndkVersion
+
+    compileOptions {
+        sourceCompatibility = JavaVersion.VERSION_17
+        targetCompatibility = JavaVersion.VERSION_17
+        /* exigé par flutter_local_notifications (java.time) */
+        isCoreLibraryDesugaringEnabled = true
+    }
+
+    defaultConfig {
+        // identifiant propre à My Page (distinct de KI DAS Contrôle)
+        applicationId = "com.kidas.mypage"
+        minSdk = 26
+        targetSdk = flutter.targetSdkVersion
+        // numéro de run GitHub Actions, comme la v1 Java
+        versionCode = runNumber
+        versionName = "1.0." + runNumber
+    }
+
+    signingConfigs {
+        create("release") {
+            if (System.getenv("KEYSTORE_PATH") != null) {
+                storeFile = file(System.getenv("KEYSTORE_PATH"))
+                storePassword = System.getenv("KEYSTORE_PASSWORD")
+                keyAlias = System.getenv("KEY_ALIAS")
+                keyPassword = System.getenv("KEY_PASSWORD")
+            }
+        }
+    }
+
+    buildTypes {
+        release {
+            // R8 + ressource shrinking : activés par le plugin Flutter 3.50
+            // (ne PAS redéfinir isMinifyEnabled ici, sinon AGP 9.3 refuse
+            //  « Removing unused resources requires unused code shrinking »).
+            signingConfig = if (System.getenv("KEYSTORE_PATH") != null) {
+                signingConfigs.getByName("release")
+            } else {
+                signingConfigs.getByName("debug")
+            }
+        }
+    }
+}
+
+kotlin {
+    compilerOptions {
+        jvmTarget = org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_17
+    }
+}
+
+flutter {
+    source = "../.."
+}
+
+dependencies {
+    coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.1.5")
+}
