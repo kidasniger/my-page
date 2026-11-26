@@ -31,6 +31,11 @@ android {
         versionName = "1.0." + runNumber
     }
 
+    lint {
+        // lintVital plante sur certaines bibliothèques (bug de l'outil) et ne sert pas à produire l'APK
+        checkReleaseBuilds = false
+    }
+
     signingConfigs {
         create("release") {
             if (System.getenv("KEYSTORE_PATH") != null) {
