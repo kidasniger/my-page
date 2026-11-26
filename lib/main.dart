@@ -303,6 +303,19 @@ class _BootState extends State<Boot> with WidgetsBindingObserver {
     if (_authenticating || !mounted) return;
     _authenticating = true;
     try {
+      // Le verrouillage au lancement est un choix de l'utilisateur (Réglages).
+      var wanted = false;
+      try {
+        wanted = (await Store.get('lock_on')
+                .timeout(const Duration(seconds: 5))) ==
+            '1';
+      } catch (_) {}
+      if (!wanted) {
+        if (!mounted) return;
+        setState(() => _locked = false);
+        _afterUnlock();
+        return;
+      }
       final supported = await _la
           .isDeviceSupported()
           .timeout(const Duration(seconds: 10));
