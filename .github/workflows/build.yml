@@ -44,12 +44,6 @@ jobs:
           flutter-version: '3.50.0'
           cache: true
 
-      - name: Polices (Archivo, Inter)
-        run: |
-          mkdir -p assets/fonts
-          curl -fsSL -o assets/fonts/Archivo.ttf "https://github.com/google/fonts/raw/main/ofl/archivo/Archivo%5Bwdth%2Cwght%5D.ttf"
-          curl -fsSL -o assets/fonts/Inter.ttf "https://github.com/google/fonts/raw/main/ofl/inter/Inter%5Bopsz%2Cwght%5D.ttf"
-
       - name: Configuration Firebase
         env:
           GOOGLE_SERVICES_B64: ${{ secrets.GOOGLE_SERVICES_B64 }}

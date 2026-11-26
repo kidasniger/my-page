@@ -40,10 +40,3 @@ flutter:
   uses-material-design: true
   assets:
     - assets/images/google.png
-  fonts:
-    - family: Archivo
-      fonts:
-        - asset: assets/fonts/Archivo.ttf
-    - family: Inter
-      fonts:
-        - asset: assets/fonts/Inter.ttf
