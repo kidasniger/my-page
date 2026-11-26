@@ -121,8 +121,39 @@ class _LoginScreenState extends State<LoginScreen> {
                   KBtn(_signup ? 'Créer mon compte' : 'Me connecter',
                       busy: _busy, onTap: _submit),
                   const SizedBox(height: 10),
-                  KBtnGhost('Continuer avec Google',
-                      onTap: _busy ? null : () => _run(Auth.signInGoogle)),
+                  SizedBox(
+                    height: 50,
+                    child: OutlinedButton(
+                      onPressed: _busy ? null : () => _run(Auth.signInGoogle),
+                      style: OutlinedButton.styleFrom(
+                        foregroundColor: c.ink,
+                        side: BorderSide(color: c.line),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(14),
+                        ),
+                      ),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Image.asset(
+                            'assets/images/google.png',
+                            width: 22,
+                            height: 22,
+                            cacheWidth: 66,
+                            excludeFromSemantics: true,
+                          ),
+                          const SizedBox(width: 10),
+                          const Flexible(
+                            child: Text(
+                              'Continuer avec Google',
+                              textAlign: TextAlign.center,
+                              style: TextStyle(fontWeight: FontWeight.w700),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
                   const SizedBox(height: 8),
                   TextButton(
                     onPressed:
