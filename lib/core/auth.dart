@@ -57,6 +57,52 @@ class Auth {
     await FirebaseAuth.instance.signOut();
   }
 
+  /// Méthode de connexion du compte courant.
+  static bool get isGoogle =>
+      user?.providerData.any((p) => p.providerId == 'google.com') ?? false;
+  static bool get isEmail =>
+      user?.providerData.any((p) => p.providerId == 'password') ?? false;
+
+  /// Reconnexion Google avant une action sensible.
+  static Future<String?> reauthGoogle() async {
+    try {
+      if (!_googleReady) {
+        await GoogleSignIn.instance.initialize(
+          serverClientId: DefaultFirebaseOptions.webClientId,
+        );
+        _googleReady = true;
+      }
+      final account = await GoogleSignIn.instance.authenticate();
+      final idToken = account.authentication.idToken;
+      if (idToken == null) {
+        return 'Reconnexion Google impossible : jeton manquant.';
+      }
+      final cred = GoogleAuthProvider.credential(idToken: idToken);
+      await user!.reauthenticateWithCredential(cred);
+      return null;
+    } on FirebaseAuthException catch (e) {
+      return _msg(e.code);
+    } catch (e) {
+      if (e.toString().toLowerCase().contains('cancel')) return '';
+      return 'Reconnexion Google impossible. Réessayez.';
+    }
+  }
+
+  /// Reconnexion par mot de passe avant une action sensible.
+  static Future<String?> reauthEmail(String pw) => _run(() async {
+        final u = user!;
+        final cred = EmailAuthProvider.credential(
+          email: u.email ?? '',
+          password: pw,
+        );
+        await u.reauthenticateWithCredential(cred);
+      });
+
+  /// Supprime le compte Auth (à faire après l'effacement des données).
+  static Future<String?> deleteAccount() => _run(() async {
+        await user!.delete();
+      });
+
   static Future<String?> _run(Future<void> Function() f) async {
     try {
       await f();
@@ -82,6 +128,8 @@ class Auth {
         return 'Un compte existe déjà avec cet e-mail.';
       case 'weak-password':
         return 'Mot de passe trop court (6 caractères minimum).';
+      case 'requires-recent-login':
+        return 'Reconnexion nécessaire pour cette action.';
       case 'network-request-failed':
         return 'Pas de connexion internet.';
       case 'too-many-requests':
