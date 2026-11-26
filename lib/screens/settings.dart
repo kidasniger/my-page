@@ -17,6 +17,7 @@ import '../ui/forms.dart' show KEdit, KSwitchRow, kConfirm;
 import '../ui/pictos.dart';
 import '../ui/shell.dart' show SubPage, kUpdateFlow;
 import 'bot_rules.dart';
+import 'connect_page.dart';
 import 'journal.dart';
 import 'delete_account.dart';
 import 'appearance.dart';
@@ -161,6 +162,16 @@ class SettingsScreenState extends State<SettingsScreen> {
             'Compte connecté',
             _sousCompte(name),
             onTap: _ouvrirConnexion,
+          ),
+          _ligne(
+            c,
+            'user',
+            'Ma Page',
+            'Connecter ou déconnecter votre Page',
+            onTap: () async {
+              Fx.tick();
+              await _push(const ConnectPageScreen());
+            },
           ),
           _ligne(
             c,
