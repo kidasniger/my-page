@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/services.dart';
 import 'package:local_auth/local_auth.dart';
 
@@ -13,7 +14,9 @@ import 'core/notification_center.dart';
 import 'core/palette.dart';
 import 'core/store.dart';
 import 'core/updater.dart';
+import 'firebase_options.dart';
 import 'screens/ai_chat.dart';
+import 'screens/auth_gate.dart';
 import 'screens/boite.dart';
 import 'screens/bot_rules.dart';
 import 'screens/composer.dart';
@@ -33,9 +36,10 @@ import 'ui/shell.dart';
 import 'widgets/pill_nav.dart';
 import 'widgets/post_card.dart' show badgeVerifie;
 
-void main() {
+Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
+  await Firebase.initializeApp(options: DefaultFirebaseOptions.android);
   runApp(const KidasApp());
 }
 
@@ -46,7 +50,7 @@ class KidasApp extends StatelessWidget {
     return ValueListenableBuilder<ThemeMode>(
       valueListenable: Bus.themeMode,
       builder: (_, mode, _) => MaterialApp(
-        title: 'KI DAS Contrôle',
+        title: 'My Page',
         debugShowCheckedModeBanner: false,
         themeMode: mode,
         theme: _theme(false),
@@ -392,7 +396,7 @@ class _BootState extends State<Boot> with WidgetsBindingObserver {
     final c = context.p;
     return Stack(
       children: [
-        const Positioned.fill(child: Shell()),
+        const Positioned.fill(child: AuthGate(child: Shell())),
         if (!_ready || _locked)
           Positioned.fill(
             child: DecoratedBox(
