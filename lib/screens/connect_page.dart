@@ -6,6 +6,7 @@ import '../core/palette.dart';
 import '../ui/common.dart';
 import '../ui/forms.dart' show ErrBox, kConfirm;
 import '../ui/shell.dart' show SubPage;
+import '../widgets/page_avatar.dart';
 import 'connect_intro.dart';
 
 /// Écran « Ma Page » : connexion, état écrit par le bot, déconnexion.
@@ -91,7 +92,13 @@ class _ConnectPageScreenState extends State<ConnectPageScreen> {
                 vertical: 14,
               ),
               onPressed: () => Navigator.pop(ctx, p),
-              child: Text(p.name, style: T.strong(c)),
+              child: Row(
+                children: [
+                  PageAvatar(p.id, p.name, size: 36),
+                  const SizedBox(width: 12),
+                  Expanded(child: Text(p.name, style: T.strong(c))),
+                ],
+              ),
             ),
         ],
       ),
@@ -163,7 +170,18 @@ class _ConnectPageScreenState extends State<ConnectPageScreen> {
           'Aucune Page connectée',
           sub: 'Connectez une Page pour activer votre assistant.',
         ),
-        KBtn('Connecter ma Page', busy: _busy, onTap: _connect),
+        KBtn(
+          'Connecter ma Page',
+          busy: _busy,
+          onTap: _connect,
+          leading: Image.asset(
+            'assets/images/facebook.png',
+            width: 22,
+            height: 22,
+            cacheWidth: 66,
+            excludeFromSemantics: true,
+          ),
+        ),
       ];
     }
     final c = context.p;
@@ -187,7 +205,13 @@ class _ConnectPageScreenState extends State<ConnectPageScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(page.nom, style: T.title(c)),
+            Row(
+              children: [
+                PageAvatar(page.id, page.nom, size: 48),
+                const SizedBox(width: 12),
+                Expanded(child: Text(page.nom, style: T.title(c))),
+              ],
+            ),
             const SizedBox(height: 10),
             StatusChip(label, kind: page.etat == PageEtat.active ? 3 : 2),
             const SizedBox(height: 10),

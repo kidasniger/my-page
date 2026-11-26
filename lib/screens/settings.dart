@@ -18,6 +18,8 @@ import '../ui/pictos.dart';
 import '../ui/shell.dart' show SubPage, kUpdateFlow;
 import 'bot_rules.dart';
 import 'connect_page.dart';
+import '../core/page_link.dart';
+import '../widgets/page_avatar.dart';
 import 'journal.dart';
 import 'delete_account.dart';
 import 'appearance.dart';
@@ -41,6 +43,7 @@ class SettingsScreenState extends State<SettingsScreen> {
   String _savedAt = '';
   String _version = '';
   bool _lockOn = false, _lockLoaded = false;
+  late final Stream<LinkedPage?> _lp = PageLink.watch();
 
   @override
   void initState() {
@@ -347,20 +350,29 @@ class SettingsScreenState extends State<SettingsScreen> {
               borderRadius: BorderRadius.circular(18),
               border: Border.all(color: c.accent, width: 1.5),
             ),
-            child: Container(
-              decoration: BoxDecoration(
-                color: c.ink,
-                borderRadius: BorderRadius.circular(14),
-              ),
-              alignment: Alignment.center,
-              child: Text(
-                name.substring(0, 1).toUpperCase(),
-                style: TextStyle(
-                  fontSize: 20,
-                  fontWeight: FontWeight.w900,
-                  color: c.bg,
-                ),
-              ),
+            child: StreamBuilder<LinkedPage?>(
+              stream: _lp,
+              builder: (_, snap) {
+                final lp = snap.data;
+                if (lp != null && lp.occupe) {
+                  return PageAvatar(lp.id, lp.nom, size: 51);
+                }
+                return Container(
+                  decoration: BoxDecoration(
+                    color: c.ink,
+                    borderRadius: BorderRadius.circular(14),
+                  ),
+                  alignment: Alignment.center,
+                  child: Text(
+                    name.substring(0, 1).toUpperCase(),
+                    style: TextStyle(
+                      fontSize: 20,
+                      fontWeight: FontWeight.w900,
+                      color: c.bg,
+                    ),
+                  ),
+                );
+              },
             ),
           ),
           const SizedBox(width: 12),

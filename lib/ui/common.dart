@@ -325,6 +325,7 @@ class KBtn extends StatelessWidget {
   final VoidCallback? onTap;
   final bool busy;
   final Color? bg, fg;
+  final Widget? leading;
   const KBtn(
     this.label, {
     super.key,
@@ -332,6 +333,7 @@ class KBtn extends StatelessWidget {
     this.busy = false,
     this.bg,
     this.fg,
+    this.leading,
   });
   @override
   Widget build(BuildContext context) {
@@ -354,14 +356,23 @@ class KBtn extends StatelessWidget {
                   valueColor: AlwaysStoppedAnimation(fg ?? c.onAccent),
                 ),
               )
-            : Text(
-                label,
-                style: TextStyle(
-                  fontSize: 13,
-                  fontWeight: FontWeight.w800,
-                  letterSpacing: .2,
-                  color: fg ?? c.onAccent,
-                ),
+            : Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  if (leading != null) ...[
+                    leading!,
+                    const SizedBox(width: 10),
+                  ],
+                  Text(
+                    label,
+                    style: TextStyle(
+                      fontSize: 13,
+                      fontWeight: FontWeight.w800,
+                      letterSpacing: .2,
+                      color: fg ?? c.onAccent,
+                    ),
+                  ),
+                ],
               ),
       ),
     );
