@@ -444,7 +444,7 @@ class _BootState extends State<Boot> with WidgetsBindingObserver {
                           alignment: Alignment.center,
                           children: [
                             Text(
-                              'K',
+                              'M',
                               style: TextStyle(
                                 fontSize: 48,
                                 fontWeight: FontWeight.w900,
@@ -470,16 +470,16 @@ class _BootState extends State<Boot> with WidgetsBindingObserver {
                       ),
                       const SizedBox(height: 28),
                       Text(
-                        'KIDAS',
+                        'My Page',
                         style: T.hero(c).copyWith(
                           color: c.ink,
                           fontSize: 30,
-                          letterSpacing: 2.2,
+                          letterSpacing: 0.4,
                         ),
                       ),
                       const SizedBox(height: 5),
                       Text(
-                        'CONTRÔLE DE VOTRE PAGE',
+                        'GÉREZ VOTRE PAGE',
                         style: T.micro(c).copyWith(letterSpacing: 2.0),
                       ),
                       const SizedBox(height: 38),
