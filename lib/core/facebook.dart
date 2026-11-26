@@ -37,7 +37,10 @@ class Facebook {
   static Future<String?> login() async {
     final LoginResult res;
     try {
-      res = await FacebookAuth.instance.login(permissions: permissions);
+      res = await FacebookAuth.instance.login(
+        permissions: permissions,
+        loginBehavior: LoginBehavior.webOnly,
+      );
     } catch (_) {
       throw const FbError('Connexion impossible. Réessayez.');
     }
