@@ -323,7 +323,22 @@ class SettingsScreenState extends State<SettingsScreen> {
 
   /* ---------- carte profil (profile-card maquette) ---------- */
 
-  Widget _profil(Palette c, String name) {
+  static String _etatTexte(PageEtat e) => switch (e) {
+        PageEtat.attente => 'en attente',
+        PageEtat.active => 'active',
+        PageEtat.erreur => 'erreur',
+        PageEtat.deconnexion => 'déconnexion en cours',
+        PageEtat.deconnectee => 'déconnectée',
+      };
+
+  Widget _profil(Palette c, String name) => StreamBuilder<LinkedPage?>(
+        stream: _lp,
+        builder: (_, snap) => _profilCard(c, name, snap.data),
+      );
+
+  Widget _profilCard(Palette c, String name0, LinkedPage? lp) {
+    final lien = lp != null && lp.occupe ? lp : null;
+    final name = lien?.nom ?? name0;
     final fans = _page == null
         ? 0
         : (_page!['fan_count'] is num
@@ -350,30 +365,23 @@ class SettingsScreenState extends State<SettingsScreen> {
               borderRadius: BorderRadius.circular(18),
               border: Border.all(color: c.accent, width: 1.5),
             ),
-            child: StreamBuilder<LinkedPage?>(
-              stream: _lp,
-              builder: (_, snap) {
-                final lp = snap.data;
-                if (lp != null && lp.occupe) {
-                  return PageAvatar(lp.id, lp.nom, size: 51);
-                }
-                return Container(
-                  decoration: BoxDecoration(
-                    color: c.ink,
-                    borderRadius: BorderRadius.circular(14),
-                  ),
-                  alignment: Alignment.center,
-                  child: Text(
-                    name.substring(0, 1).toUpperCase(),
-                    style: TextStyle(
-                      fontSize: 20,
-                      fontWeight: FontWeight.w900,
-                      color: c.bg,
+            child: lien != null
+                ? PageAvatar(lien.id, lien.nom, size: 51)
+                : Container(
+                    decoration: BoxDecoration(
+                      color: c.ink,
+                      borderRadius: BorderRadius.circular(14),
+                    ),
+                    alignment: Alignment.center,
+                    child: Text(
+                      name.substring(0, 1).toUpperCase(),
+                      style: TextStyle(
+                        fontSize: 20,
+                        fontWeight: FontWeight.w900,
+                        color: c.bg,
+                      ),
                     ),
                   ),
-                );
-              },
-            ),
           ),
           const SizedBox(width: 12),
           Expanded(
@@ -409,8 +417,10 @@ class SettingsScreenState extends State<SettingsScreen> {
                 ),
                 const SizedBox(height: 2),
                 Text(
-                  _page == null
-                      ? 'Page Facebook · apparaît après le premier cycle'
+                  lien != null
+                      ? 'Page Facebook · ${_etatTexte(lien.etat)}'
+                      : _page == null
+                      ? 'Aucune Page connectée'
                       : '${fans > 0 ? "${nf(fans)} J'aime · " : ""}Page Facebook',
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
