@@ -142,7 +142,7 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
               borderRadius: BorderRadius.circular(15),
             ),
             child: Center(
-              child: Text('K',
+              child: Text('M',
                   style: TextStyle(
                     color: c.bg,
                     fontSize: 25,
@@ -155,9 +155,9 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text('KIDAS CONTRÔLE',
+                Text('My Page',
                     style: T.strong(c).copyWith(letterSpacing: 1.1)),
-                Text('VOTRE ESPACE DE PILOTAGE',
+                Text('GÉREZ VOTRE PAGE',
                     style: T.micro(c).copyWith(fontSize: 9)),
               ],
             ),
