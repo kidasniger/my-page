@@ -10,6 +10,7 @@ class AccountData {
     'inbox',
     'stats',
     'profil',
+    'proposition',
     'questions',
     'file',
   ];
