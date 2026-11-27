@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 
-import '../core/api.dart' show Api;
 import '../core/bot_profile.dart';
 import '../core/palette.dart';
 import '../ui/common.dart';
