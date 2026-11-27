@@ -73,7 +73,7 @@ service cloud.firestore {
       // Proposition de profil : écrite par le bot ; le client note ses décisions
       // et peut redemander une analyse, sans toucher aux valeurs proposées.
       match /proposition/{id} {
-        allow read: if isOwner(uid);
+        allow read, delete: if isOwner(uid);
         allow create: if isOwner(uid)
           && request.resource.data.keys().hasOnly(['etat'])
           && request.resource.data.etat == 'redemande';
