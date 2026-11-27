@@ -162,3 +162,45 @@ test('tout le reste est refusé', async () => {
   await assertFails(setDoc(doc(alice(), 'users/alice/inconnu/x'), { a: 1 }));
   await assertFails(getDoc(doc(anon(), 'users/alice')));
 });
+
+test('phase 5 : profil, champs connus et heure du serveur', async () => {
+  await seed();
+  const p = () => doc(alice(), 'users/alice/profil/p1');
+  await assertSucceeds(
+    setDoc(p(), { ton: 'neutre', completion: 11, maj: serverTimestamp() }, { merge: true }),
+  );
+  await assertFails(setDoc(p(), { admin: true }, { merge: true }));
+  await assertFails(setDoc(p(), { maj: new Date(2000, 0, 1) }, { merge: true }));
+  await assertFails(getDoc(doc(bob(), 'users/alice/profil/p1')));
+});
+
+test('phase 5 : proposition protégée', async () => {
+  await seed();
+  await env.withSecurityRulesDisabled(async (ctx) => {
+    await setDoc(doc(ctx.firestore(), 'users/alice/proposition/p1'), {
+      ton: 'neutre',
+      etat: 'a_valider',
+    });
+  });
+  const p = () => doc(alice(), 'users/alice/proposition/p1');
+  await assertSucceeds(getDoc(p()));
+  await assertFails(getDoc(doc(bob(), 'users/alice/proposition/p1')));
+  await assertSucceeds(setDoc(p(), { decisions: { ton: 'ok' } }, { merge: true }));
+  await assertFails(updateDoc(p(), { ton: 'direct' }));
+  await assertFails(updateDoc(p(), { etat: 'validee' }));
+  await assertSucceeds(updateDoc(p(), { etat: 'redemande' }));
+  await assertFails(deleteDoc(doc(bob(), 'users/alice/proposition/p1')));
+  await assertSucceeds(deleteDoc(p()));
+  await assertSucceeds(setDoc(p(), { etat: 'redemande' }));
+  await assertFails(
+    setDoc(doc(alice(), 'users/alice/proposition/p2'), { etat: 'redemande', ton: 'direct' }),
+  );
+});
+
+test('phase 5 : états des questions', async () => {
+  await seed();
+  const q = () => doc(alice(), 'users/alice/questions/q1');
+  await assertSucceeds(updateDoc(q(), { etat: 'passee', reponduLe: serverTimestamp() }));
+  await assertFails(updateDoc(q(), { etat: 'ouverte' }));
+  await assertFails(updateDoc(q(), { etat: 'passee', reponduLe: new Date(2000, 0, 1) }));
+});
