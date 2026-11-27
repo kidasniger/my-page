@@ -152,7 +152,11 @@ class _Point extends StatelessWidget {
             ],
           ),
           const SizedBox(height: 8),
-          Text(_affiche(point, proposition.valeur(point)), style: T.strong(c)),
+          Text(
+            _affiche(point,
+                d == 'corrige' ? profil.data[point] : proposition.valeur(point)),
+            style: T.strong(c),
+          ),
           if (d.isEmpty) ...[
             const SizedBox(height: 12),
             Row(
