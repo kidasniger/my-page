@@ -16,7 +16,7 @@ import '../ui/common.dart';
 import '../ui/forms.dart' show KEdit, KSwitchRow, kConfirm;
 import '../ui/pictos.dart';
 import '../ui/shell.dart' show SubPage, kUpdateFlow;
-import 'bot_rules.dart';
+import 'my_bot.dart';
 import 'connect_page.dart';
 import '../core/page_link.dart';
 import '../widgets/page_avatar.dart';
@@ -194,12 +194,12 @@ class SettingsScreenState extends State<SettingsScreen> {
           _ligne(
             c,
             'bot',
-            'Règles du bot',
+            'Mon bot',
             subRegles,
             onTap: () async {
               Fx.tick();
               await _push(
-                const SubPage('Bot & Règles', child: BotRulesScreen()),
+                const SubPage('Mon bot', child: MyBotPage()),
               );
             },
           ),

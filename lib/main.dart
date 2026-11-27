@@ -18,7 +18,7 @@ import 'firebase_options.dart';
 import 'screens/ai_chat.dart';
 import 'screens/auth_gate.dart';
 import 'screens/boite.dart';
-import 'screens/bot_rules.dart';
+import 'screens/my_bot.dart';
 import 'screens/composer.dart';
 import 'screens/journal.dart';
 import 'screens/home.dart';
@@ -610,7 +610,7 @@ class _ShellState extends State<Shell> with WidgetsBindingObserver {
       case 1:
         return const BoiteScreen();
       case 3:
-        return const BotRulesScreen();
+        return const MyBotPage();
       case 4:
         return const StatsScreen();
       default:
@@ -719,7 +719,7 @@ class _ShellState extends State<Shell> with WidgetsBindingObserver {
       ),
       'mod': () => const SubPage('Modération', child: ModerationScreen()),
       'med': () => const SubPage('Studio Médias', child: MediasScreen()),
-      'bot': () => const SubPage('Bot & Règles', child: BotRulesScreen()),
+      'bot': () => const SubPage('Mon bot', child: MyBotPage()),
       'log': () => SubPage(
         "Journal d'activité",
         trailing: Press(

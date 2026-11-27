@@ -59,19 +59,42 @@ service cloud.firestore {
         allow read: if isOwner(uid);
       }
 
-      // Profil de la Page : le client écrit ses réponses.
+      // Profil de la Page : le client écrit ses réponses (champs connus seulement).
       match /profil/{id} {
-        allow read, write: if isOwner(uid);
+        allow read, delete: if isOwner(uid);
+        allow create, update: if isOwner(uid)
+          && request.resource.data.keys().hasOnly(['activite', 'ton', 'langues', 'public',
+               'offres', 'horaires', 'faq', 'eviter', 'motsInterdits', 'silence',
+               'reponsesAuto', 'reponsePrix', 'sujets', 'completion', 'maj', 'dryRun',
+               'nom', 'description', 'reponses', 'moderation'])
+          && request.resource.data.get('maj', request.time) == request.time;
+      }
+
+      // Proposition de profil : écrite par le bot ; le client note ses décisions
+      // et peut redemander une analyse, sans toucher aux valeurs proposées.
+      match /proposition/{id} {
+        allow read: if isOwner(uid);
+        allow create: if isOwner(uid)
+          && request.resource.data.keys().hasOnly(['etat'])
+          && request.resource.data.etat == 'redemande';
+        allow update: if isOwner(uid)
+          && onlyChanges(['decisions', 'etat'])
+          && request.resource.data.get('etat', 'redemande') is string
+          && (request.resource.data.get('etat', '') == resource.data.get('etat', '')
+            || request.resource.data.etat == 'redemande')
+          && request.resource.data.get('decisions', {}) is map
+          && request.resource.data.get('decisions', {}).size() <= 10;
       }
 
       // Questions : créées par le bot, le client écrit réponse et état.
       match /questions/{id} {
         allow read, delete: if isOwner(uid);
         allow update: if isOwner(uid)
-          && onlyChanges(['reponse', 'etat'])
+          && onlyChanges(['reponse', 'etat', 'reponduLe'])
           && request.resource.data.get('reponse', '') is string
           && request.resource.data.get('reponse', '').size() <= 2000
-          && request.resource.data.get('etat', '') is string;
+          && request.resource.data.get('etat', '') in ['repondue', 'passee']
+          && request.resource.data.get('reponduLe', request.time) == request.time;
       }
 
       // File d'actions pour le bot : création et suppression seulement.
